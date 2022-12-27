@@ -2,45 +2,70 @@ package ru.home.ui;
 
 import ru.home.controller.UserController;
 import ru.home.controller.UserControllerImpl;
-import ru.home.dao.UserDaoImpl;
 import ru.home.model.User;
 import ru.home.service.UserServiceImpl;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-public class ConsoleUserInterfaceImpl implements ConsoleUserInterface {
+public class ConsoleUserInterfaceImpl {
+    public void start() {
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
+            System.out.println("Привет, введи свою первую команду");
+            String command = "";
+            UserController request = new UserControllerImpl(new UserServiceImpl());
+            Long userId;
+            User user;
 
-    UserController userController = new UserControllerImpl(new UserServiceImpl(new UserDaoImpl()));
+            while (!(command = bufferedReader.readLine()).equals("exit")) {
+                switch (command) {
+                    case "help":
+                        System.out.println("1 - createUser");
+                        System.out.println("2 - getUser by ID");
+                        System.out.println("3 - getAllUsers");
+                        break;
+                    case "1":
+                        System.out.println("Create user and enter user name, user city live and user city work");
+                        String name = bufferedReader.readLine();
+                        Set<String> citiesLive = addCitiesToSet();
+                        Set<String> citiesWork = addCitiesToSet();
+                        userId = request.createUser(name, citiesLive, citiesWork);
+                        System.out.println(userId);
+                        break;
+                    case "2":
+                        System.out.println("Get User and enter ID user");
+                        userId = Long.parseLong(bufferedReader.readLine());
+                        user = request.getUser(userId);
+                        System.out.println(user);
+                        break;
+                    case "3":
+                        System.out.println("Get all user");
+                        request.getAllUsers().forEach(System.out::println);
+                        break;
+                }
+            }
 
-    public User getUser(Long id) {
-        User user = userController.getUser(7l);
-        return user;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public List<User> findUserByName(String name) {
-        List<User> users = userController.findUserByName("Bob");
-        return users;
-    }
+    private Set<String> addCitiesToSet() {
 
-    public Long createUser(String name, Set<String> citiesLive, Set<String> citiesWork) {
-        User user = new User(5L,"Masha", new HashSet<>(), new HashSet<>());
-        Long id = userController.createUser(name, citiesLive, citiesWork);
-        return id;
-    }
-
-    public List<User> getAllUsers() {
-        List<User> users = userController.getAllUsers();
-        return users;
-    }
-
-    public User updateUser(User user) {
-        User user2 = new User(5L,"Elena", new HashSet<>(), new HashSet<>());
-        return userController.updateUser(user2);
-    }
-
-    public void deleteUser(Long id) {
-        userController.deleteUser(8L);
+        Set<String> cities = new HashSet<>();
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
+            System.out.println("Привет, введи название города, когда закончишь - введи exit");
+            String city;
+            while (!(city = bufferedReader.readLine()).equals("exit")) {
+                cities.add(city);
+            }
+            return cities;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return cities;
     }
 }

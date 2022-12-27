@@ -1,6 +1,7 @@
 package ru.home.service;
 
 import ru.home.dao.UserDao;
+import ru.home.dao.UserDaoImpl;
 import ru.home.model.User;
 
 import java.util.List;
@@ -9,9 +10,9 @@ import java.util.Set;
 
 public class UserServiceImpl implements UserService {
 
-    private final UserDao userDao;
+    private UserDao userDao = new UserDaoImpl();
 
-    public UserServiceImpl(UserDao userDao) {
+    public UserServiceImpl() {
         this.userDao = Objects.requireNonNull(userDao);
     }
 
