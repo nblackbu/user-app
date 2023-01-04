@@ -91,7 +91,20 @@ public class UserDaoImpl implements UserDao {
     }
 
     public Long createCity(String citiesName) {
+        Long id = 0L;
+        try {
+            String query = "insert into cities (name) value (" + citiesName + ")";
+            PreparedStatement statement = worker.getConnection().prepareStatement(query);
 
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                id = resultSet.getLong("id");
+            }
+            statement.close();
+            return id;
+        } catch (SQLException e) {
+            throw new ApplicationException("Не удалось создать город");
+        }
     }
 
     public Long getCityId (String nameCity) {
@@ -99,10 +112,16 @@ public class UserDaoImpl implements UserDao {
             Long id = 0L;
             String query = "select id from cities where name = '" + nameCity + "'";
             PreparedStatement statement = worker.getConnection().prepareStatement(query);
+            int affectedRows = statement.executeUpdate();
 
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                id = resultSet.getLong("id");
+            if (affectedRows == 0) {
+                // было: throw new ApplicationException("Пользователь не был создан");
+                id = createCity(nameCity);
+            } else {
+                ResultSet resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    id = resultSet.getLong("id");
+                }
             }
             statement.close();
             return id;
